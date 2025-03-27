@@ -1,0 +1,151 @@
+ services:
+  zookeeper-1:
+    image: confluentinc/cp-zookeeper:latest
+    ports:
+      - "22181:2181"  # 클라이언트 포트
+      - "22888:2888"  # 서버 간 연결
+      - "23888:3888"  # 리더 선출
+    environment:
+      ZOOKEEPER_SERVER_ID: 1
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_INIT_LIMIT: 5
+      ZOOKEEPER_SYNC_LIMIT: 2
+      ZOOKEEPER_SERVERS: zookeeper-1:2888:3888;zookeeper-2:2888:3888;zookeeper-3:2888:3888
+    volumes:
+      - ./zookeeper-data-1:/var/lib/zookeeper/data
+      - ./zookeeper-log-1:/var/lib/zookeeper/log
+      - ./zookeeper-etc-1:/etc/zookeeper
+      - ./zookeeper-kafka-1:/etc/kafka
+
+  zookeeper-2:
+    image: confluentinc/cp-zookeeper:latest
+    ports:
+      - "32181:2181"  # 클라이언트 포트
+      - "32888:2888"  # 서버 간 연결
+      - "33888:3888"  # 리더 선출
+    volumes:
+      - ./zookeeper-data-2:/var/lib/zookeeper/data
+      - ./zookeeper-log-2:/var/lib/zookeeper/log
+      - ./zookeeper-etc-2:/etc/zookeeper
+      - ./zookeeper-kafka-2:/etc/kafka
+    environment:
+      ZOOKEEPER_SERVER_ID: 2
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_INIT_LIMIT: 5
+      ZOOKEEPER_SYNC_LIMIT: 2
+      ZOOKEEPER_SERVERS: zookeeper-1:2888:3888;zookeeper-2:2888:3888;zookeeper-3:2888:3888
+
+  zookeeper-3:
+    image: confluentinc/cp-zookeeper:latest
+    ports:
+      - "42181:2181"  # 클라이언트 포트
+      - "42888:2888"  # 서버 간 연결
+      - "43888:3888"  # 리더 선출
+    volumes:
+      - ./zookeeper-data-3:/var/lib/zookeeper/data
+      - ./zookeeper-log-3:/var/lib/zookeeper/log
+      - ./zookeeper-etc-3:/etc/zookeeper
+      - ./zookeeper-kafka-3:/etc/kafka
+    environment:
+      ZOOKEEPER_SERVER_ID: 3
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_INIT_LIMIT: 5
+      ZOOKEEPER_SYNC_LIMIT: 2
+      ZOOKEEPER_SERVERS: zookeeper-1:2888:3888;zookeeper-2:2888:3888;zookeeper-3:2888:3888
+
+  kafka-1:
+    image: confluentinc/cp-kafka:latest
+    ports:
+      - "29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      # KAFKA_CLUSTER_ID="$(bin/kafka-storage.sh random-uuid)"  # 이건 옛날인가?
+      # Replace CLUSTER_ID with a unique base64 UUID using "bin/kafka-storage.sh random-uuid"
+      # See https://docs.confluent.io/kafka/operations-tools/kafka-tools.html#kafka-storage-sh
+      #  CLUSTER_ID: 'olSGAop6QPasm33RWyfi8w'
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper-1:2181,zookeeper-2:2181,zookeeper-3:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-1:9092,PLAINTEXT_HOST://localhost:29092  #  kafka 브로커를 가리키는 사용 가능 주소로 초기연결시에 클라이언트에 전달되는 메타 데이터
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT  # # 브로커 간 통신에 사용할 리스너를 정의
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 3  # 자동으로 생성되는 topic의 기본 복제 수
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+#      KAFKA_CONFLUENT_SCHEMA_REGISTRY_URL: http://schema-registry:8081  # grok이 안적어도된다고는했는데, sample repo는 포함
+    volumes:
+      - ./kafka-data-1:/var/lib/kafka/data
+      - ./kafka-secrets-1:/etc/kafka/secrets
+#
+#
+  kafka-2:
+    image: confluentinc/cp-kafka:latest
+    ports:
+      - "39092:39092"
+    environment:
+      KAFKA_BROKER_ID: 2
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper-1:2181,zookeeper-2:2181,zookeeper-3:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-2:9092,PLAINTEXT_HOST://localhost:39092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT  # 브로커 간 통신에 사용할 리스너를 정의
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+    volumes:
+      - ./kafka-data-2:/var/lib/kafka/data
+      - ./kafka-secrets-2:/etc/kafka/secrets
+
+  kafka-3:
+    image: confluentinc/cp-kafka:latest
+    ports:
+      - "49092:49092"
+    environment:
+      KAFKA_BROKER_ID: 3
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper-1:2181,zookeeper-2:2181,zookeeper-3:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-3:9092,PLAINTEXT_HOST://localhost:49092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+    volumes:
+      - ./kafka-data-3:/var/lib/kafka/data
+      - ./kafka-secrets-3:/etc/kafka/secrets
+
+  schema-registry:
+    image: confluentinc/cp-schema-registry:7.6.0
+    volumes:
+      - ./schema-registry:/etc/schema-registry
+    depends_on:
+      - kafka-1
+      - kafka-2
+      - kafka-3
+    ports:
+      - "8081:8081"
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: kafka-1:9092,kafka-2:9092,kafka-3:9092
+      SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
+
+  akhq:
+    image: tchiotludo/akhq:latest
+    restart: unless-stopped
+    environment:
+      AKHQ_CONFIGURATION: |
+        akhq:
+          connections:
+            docker-kafka-server-1:
+              properties:
+                bootstrap.servers: "kafka-1:9092"
+            docker-kafka-server-2:
+              properties:
+                bootstrap.servers: "kafka-2:9092"
+            docker-kafka-server-3:
+              properties:
+                bootstrap.servers: "kafka-3:9092"
+    ports:
+      - "8080:8080"
