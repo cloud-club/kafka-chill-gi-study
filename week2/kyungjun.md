@@ -4,6 +4,12 @@
 - 개발자 관점
 - 운영자 관점
 
+```markdown
+Note that Kafka is positioned as an event streaming platform, 
+so the term “message”, which is often used in message queues, is not used in Kafka. 
+We call it an “event”.
+```
+
 ## Key Takeaways
 
 ## 1장
@@ -21,12 +27,16 @@
 
 ## 2장
 - https://brunch.co.kr/@peter5236/13
-
+- 파티션은 수는 늘리면 (절대) 다시 줄일 수가 없으니까, 항상 이 부분 을 명심하셔야한다. -> p.29 
 
 
 ## 3장
 - https://www.yuki-dev-blog.site/data-engineering/kafka/kafka-core-guide/3
 - 해당 내용으로 갈음하겠습니다.
+- p.54 
+# 
+- 기술적으로 이야기 하면, 카프카 프로듀서는 언제나 비동기적으로 작동한다. / # .get() -> 비동기 -> 동기 
+- 
 
 카프카 프로듀서(3장)
 - Kafka 3.0 이후 버전에서는 acks=all을 설정하면 enable.idempotence=true가 자동 활성화됩니다.
@@ -77,6 +87,7 @@
 
 
 ### 심화 자료
+- https://blog.bytebytego.com/p/why-is-kafka-so-fast-how-does-it
 - Kafka Producer 내부에서 RecordBatch가 ProducerBatch로 변경됨.
 - Kafka 2.1.0 이후 버전에서는 RecordAccumulator가 Map<TopicPartition, Deque<ProducerBatch>>를 관리.
 
