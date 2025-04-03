@@ -88,3 +88,7 @@
 - https://kafka.apache.org/contributing.html
 
 
+### 결과물
+1. 카프카 기반 마인드맵
+2. 카프카 관련 wireshark 기반 실습(cf. https://always-kimkim.tistory.com/entry/kafka-protocol-network)
+3. 카프카 관련 프로젝트(ex. mcp)
